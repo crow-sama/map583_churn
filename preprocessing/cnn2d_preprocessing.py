@@ -1,10 +1,13 @@
-import pandas as pd
+import os
 
-import torch
+import numpy as np
+import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.feature_selection import VarianceThreshold
 from scipy.spatial.distance import pdist, squareform
+
+import torch
 
 
 def read_raw_data(path):
@@ -130,6 +133,52 @@ class Loader:
 
     def __init__(self, use_cuda, dataset_number, batch_size):
 
+        recovered = self._recover_data()
+        if recovered:
+            X_train, X_test, y_train, y_test, num_channels = recovered
+            print("read data from cache")
+        else:
+            X_train, X_test, y_train, y_test, num_channels = self._construct_data(dataset_number)
+            self._save_data(X_train, X_test, y_train, y_test)
+            print("constructing dataset")
+
+        self.num_train_batches = int(X_train.shape[0] / batch_size)
+        self.num_test_batches = int(X_test.shape[0] / batch_size)
+
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
+
+        self.num_channels = num_channels
+
+        self.cuda = use_cuda and torch.cuda.is_available()
+        self.batch_size = batch_size
+
+    def _recover_data(self):
+
+        if all(os.path.isfile(name) for name in ["X_train.npy", "X_test.npy", "y_train.npy", "y_test.npy"]):
+            X_train = np.load("X_train.npy")
+            X_test = np.load("X_test.npy") 
+            y_train =  np.load("y_train.npy")
+            y_test = np.load("y_test.npy") 
+            num_channels = X_train.shape[1]
+
+            return X_train, X_test, y_train, y_test, num_channels
+
+        else:
+            return False
+
+
+    def _save_data(self, X_train, X_test, y_train, y_test):
+        np.save("X_train.npy", X_train)
+        np.save("X_test.npy", X_test)
+        np.save("y_train.npy", y_train)
+        np.save("y_test.npy", y_test)
+
+
+    def _construct_data(self, dataset_number):
+
         train_df, test_df, feature_cols = read_data(dataset_number)
 
         X_train = gen_features(
@@ -144,30 +193,26 @@ class Loader:
             sequence_cols=feature_cols,
         )
 
-        self.y_train = gen_responses(
+        y_train = gen_responses(
             df=train_df,
             sequence_length=50,
             label_cols=["label2"],
         )
 
-        self.y_test = gen_responses(
+        y_test = gen_responses(
             df=test_df,
             sequence_length=50,
             label_cols=["label2"],
         )
 
-        self.X_train = np.apply_along_axis(rec_plot, 1, X_train).astype('float16')
+        X_train = np.apply_along_axis(rec_plot, 1, X_train).astype("float16")
+        X_test = np.apply_along_axis(rec_plot, 1, X_test).astype("float16")
+        num_channels = len(feature_cols)
 
-        self.X_test = np.apply_along_axis(rec_plot, 1, X_test).astype('float16')
+        X_train = X_train.reshape((-1, num_channels, 50, 50))
+        X_test = X_test.reshape((-1, num_channels, 50, 50))
 
-        self.num_channels = len(feature_cols)
-
-        self.num_train_batches = int(X_train.shape[0] / batch_size)
-        self.num_test_batches = int(X_test.shape[0] / batch_size)
-
-        self.cuda = use_cuda and torch.cuda_is_available()
-
-        self.batch_size = batch_size
+        return X_train, X_test, y_train, y_test, num_channels
 
 
     def train(self):
@@ -177,7 +222,7 @@ class Loader:
             y = self.y_train[start:stop]
 
             X = torch.from_numpy(X).type(torch.FloatTensor)
-            y = torch.from_numpy(y).type(torch.LongTensor)
+            y = torch.from_numpy(y).type(torch.LongTensor).view(-1)
 
             if self.cuda:
                 X, y = X.cuda(), y.cuda()
@@ -192,7 +237,7 @@ class Loader:
             y = self.y_test[start:stop]
 
             X = torch.from_numpy(X).type(torch.FloatTensor)
-            y = torch.from_numpy(y).type(torch.LongTensor)
+            y = torch.from_numpy(y).type(torch.LongTensor).view(-1)
 
             if self.cuda:
                 X, y = X.cuda(), y.cuda()

@@ -1,15 +1,16 @@
-import numpy as np
-import torch
+from tqdm import tqdm
 
+import numpy as np
 from matplotlib import pyplot as plt
+
+import torch
 
 
 
 def train_epoch(loader, model, loss_fn, optimizer):
-    nb_train_sequences = len(y_train)
     model.train()
     losses = []
-    for X, y in loader.train():
+    for X, y in tqdm(loader.train()):
         # batch by batch
         pred = model(X)
         loss = loss_fn(pred, y)
@@ -23,7 +24,7 @@ def train_epoch(loader, model, loss_fn, optimizer):
 def test_epoch(loader, model, loss_fn):
     model.eval()
     losses = []
-    for X, y in loader.test():
+    for X, y in tqdm(loader.test()):
         pred = model(X)
         loss = loss_fn(pred, y)
         losses.append(loss.item())

@@ -4,6 +4,7 @@ from training import cnn2d_training as cnn_trn
 
 import git
 import torch
+import torch.nn as nn
 import os
 
 
@@ -15,24 +16,21 @@ if repo_not_cloned:
 
 loader = cnn_pre.Loader(use_cuda=True, dataset_number=3, batch_size=32)
 
-model = Net(num_channels=loader.num_channels)
+model = cnn_mod.Net(num_channels=loader.num_channels)
 
 if loader.cuda:
     model = model.cuda()
 
 learning_rate = 1e-3
-
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+loss_fn = nn.NLLLoss(reduction="sum")
 
-loss_fn = nn.NLLLoss()
-
-nb_epochs = 10
+nb_epochs = 100
 
 model_name = "CNN2d"
 
 model, train_loss_t, test_loss_t = cnn_trn.fit(model, loader, optimizer, loss_fn, nb_epochs)
 
 cnn_trn.plot_losses(train_loss_t, test_loss_t)
-
 cnn_trn.save_model_and_losses(train_loss_t, test_loss_t, model, model_name)
 
