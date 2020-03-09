@@ -1,3 +1,5 @@
 *.npy
 
 RUL-Net/
+
+data/

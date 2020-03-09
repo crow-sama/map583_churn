@@ -25,12 +25,17 @@ learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 loss_fn = nn.NLLLoss(reduction="sum")
 
-nb_epochs = 100
+nb_epochs = 50 
 
 model_name = "CNN2d"
 
-model, train_loss_t, test_loss_t = cnn_trn.fit(model, loader, optimizer, loss_fn, nb_epochs)
+model, train_loss_t, test_loss_t, confusion_matrix = cnn_trn.fit(model, loader, optimizer, loss_fn, nb_epochs)
 
-cnn_trn.plot_losses(train_loss_t, test_loss_t)
-cnn_trn.save_model_and_losses(train_loss_t, test_loss_t, model, model_name)
+cm_fig = cnn_trn.plot_confusion_matrix(confusion_matrix, classes=[0, 1, 2])
+cm_fig.savefig("cm.png")
+
+loss_fig = cnn_trn.plot_losses(train_loss_t, test_loss_t)
+loss_fig.savefig("loss.png")
+
+#cnn_trn.save_model_and_losses(train_loss_t, test_loss_t, model, model_name)
 
