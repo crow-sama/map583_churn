@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 
 from sklearn.preprocessing import MinMaxScaler
-from skearn.feature_selection import VarianceThreshold
+from sklearn.feature_selection import VarianceThreshold
 from sklearn.spatial.distance import pdist, squareform
 
 
