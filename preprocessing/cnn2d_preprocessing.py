@@ -4,7 +4,7 @@ import torch
 
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist, squareform
 
 
 def read_raw_data(path):
