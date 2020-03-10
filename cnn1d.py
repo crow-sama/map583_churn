@@ -15,7 +15,7 @@ if repo_not_cloned:
 
 
 # remove *.npy files when you change the parameters
-loader = cnn_pre.Loader(use_cuda=True, batch_size=50, w0=60, w1=100)
+loader = cnn_pre.Loader(use_cuda=True, batch_size=50, dataset_loader = 1)
 
 model = cnn_mod.Net(num_channels=loader.num_channels)
 
