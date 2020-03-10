@@ -142,13 +142,6 @@ class Loader:
         self.batch_size = batch_size
 
 
-    def _save_data(self, X_train, X_test, y_train, y_test):
-        np.save("X_train.npy", X_train)
-        np.save("X_test.npy", X_test)
-        np.save("y_train.npy", y_train)
-        np.save("y_test.npy", y_test)
-
-
     def _construct_data(self, dataset_number):
 
         train_df, test_df, feature_cols = read_data(dataset_number)
