@@ -5,6 +5,8 @@ Amine Chaker
 
 Ahmed Alouane
 
+Emile Lucas
+
 ## Datasets
 RUL engine dataset with multiple time series features for each engine. The test data contains the number of cycles until engine failure. The goal is to predict the number of cycles until failure.
 
