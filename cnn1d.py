@@ -31,7 +31,10 @@ nb_epochs = 20
 
 model_name = "CNN1d"
 
-model, train_loss_t, test_loss_t = cnn_trn.fit(model, loader, optimizer, loss_fn, nb_epochs)
+model, train_loss_t, test_loss_t, confusion_matrix = cnn_trn.fit(model, loader, optimizer, loss_fn, nb_epochs)
+
+cm_fig = cnn_trn.plot_confusion_matrix(confusion_matrix, classes=[0, 1, 2])
+cm_fig.savefig("cm.png")
 
 loss_fig = cnn_trn.plot_losses(train_loss_t, test_loss_t)
 loss_fig.savefig("loss.png")
