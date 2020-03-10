@@ -5,9 +5,9 @@ import torch.nn.functional as F
 
 class Net(nn.Module):
 
-    def __init__(self):
+    def __init__(self, num_channels):
+        
         super(Net, self).__init__()
-        print(num_channels)
 
         self.conv1 = nn.Conv1d(num_channels, 64, 3)
 
