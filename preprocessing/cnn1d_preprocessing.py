@@ -125,14 +125,8 @@ class Loader:
 
     def __init__(self, use_cuda, dataset_number, batch_size):
 
-        recovered = self._recover_data()
-        if recovered:
-            X_train, X_test, y_train, y_test, num_channels = recovered
-            print("read data from cache")
-        else:
-            X_train, X_test, y_train, y_test, num_channels = self._construct_data(dataset_number)
-            self._save_data(X_train, X_test, y_train, y_test)
-            print("constructing dataset")
+        X_train, X_test, y_train, y_test, num_channels = self._construct_data(dataset_number)
+        print("constructing dataset")
 
         self.num_train_batches = int(X_train.shape[0] / batch_size)
         self.num_test_batches = int(X_test.shape[0] / batch_size)
@@ -146,20 +140,6 @@ class Loader:
 
         self.cuda = use_cuda and torch.cuda.is_available()
         self.batch_size = batch_size
-
-    def _recover_data(self):
-
-        if all(os.path.isfile(name) for name in ["X_train.npy", "X_test.npy", "y_train.npy", "y_test.npy"]):
-            X_train = np.load("X_train.npy")
-            X_test = np.load("X_test.npy") 
-            y_train =  np.load("y_train.npy")
-            y_test = np.load("y_test.npy") 
-            num_channels = X_train.shape[1]
-
-            return X_train, X_test, y_train, y_test, num_channels
-
-        else:
-            return False
 
 
     def _save_data(self, X_train, X_test, y_train, y_test):
