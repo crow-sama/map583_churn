@@ -34,7 +34,7 @@ def test_epoch(loader, model, loss_fn):
         fill = np.ones(classes.shape[0])
         cm += coo_matrix((fill, (classes.cpu(), y.cpu())), shape=(3, 3)).toarray()
 
-        batch_accuracy = (classes == y).sum().item() / len(classes)
+        batch_accuracy = (classes == y).sum().item() / classes.shape[0]
         accuracy.append(batch_accuracy)
 
         loss = loss_fn(pred, y)
@@ -54,7 +54,13 @@ def fit(model, loader, optimizer, loss_fn, nb_epochs):
         train_loss_t.append(train_loss)
         test_loss_t.append(test_loss)
         print("Train set: Average loss: {:.4f}\n".format(train_loss))
-        print("Test set: Average loss: {:.4f} Accuracy: {:.4f}\n".format(test_loss, test_accuracy))
+        print("Test set: Average loss: {:.4f}".format(test_loss, test_accuracy))
+        print("          Accuracy: {:.4f}".format(test_accuracy))
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("          Class 0 Accuracy: {:.4f}".format(cm[0, 0]))
+        print("          Class 1 Accuracy: {:.4f}".format(cm[1, 1]))
+        print("          Class 2 Accuracy: {:.4f}\n".format(cm[2, 2]))
+        
 
     return model, train_loss_t, test_loss_t, cm
 
@@ -84,7 +90,6 @@ def plot_confusion_matrix(cm, classes, title='Confusion matrix', cmap=plt.cm.Blu
     fig, ax = plt.subplots(nrows=1, ncols=1)
     ax.imshow(cm, interpolation='nearest', cmap=cmap)
     ax.set_title(title, fontsize=25)
-        #plt.colorbar()
     tick_marks = np.arange(len(classes))
     ax.xaxis.set_ticks(tick_marks, classes)
     ax.yaxis.set_ticks(tick_marks, classes)

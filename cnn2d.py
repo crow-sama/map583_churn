@@ -14,7 +14,8 @@ if repo_not_cloned:
     git.Git().clone("https://github.com/LahiruJayasinghe/RUL-Net.git")
 
 
-loader = cnn_pre.Loader(use_cuda=True, dataset_number=3, batch_size=32)
+# remove *.npy files when you change the parameters
+loader = cnn_pre.Loader(use_cuda=True, batch_size=50, w0=60, w1=100)
 
 model = cnn_mod.Net(num_channels=loader.num_channels)
 
@@ -23,9 +24,10 @@ if loader.cuda:
 
 learning_rate = 1e-3
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-loss_fn = nn.NLLLoss(reduction="sum")
 
-nb_epochs = 50 
+loss_fn = nn.NLLLoss()
+
+nb_epochs = 10
 
 model_name = "CNN2d"
 

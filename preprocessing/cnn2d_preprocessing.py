@@ -50,10 +50,10 @@ def read_test_data(test_path, truth_path):
     return data
 
 
-def read_data(file_number):
-    train_path = "RUL-Net/CMAPSSData/train_FD00{}.txt".format(file_number)
-    test_path = "RUL-Net/CMAPSSData/test_FD00{}.txt".format(file_number)
-    truth_path = "RUL-Net/CMAPSSData/RUL_FD00{}.txt".format(file_number)
+def read_data(w0, w1):
+    train_path = "data/PM_train.txt"
+    test_path = "data/PM_test.txt"
+    truth_path = "data/PM_truth.txt"
 
     train = read_raw_data(train_path)
     test = read_test_data(test_path, truth_path) 
@@ -76,9 +76,6 @@ def read_data(file_number):
     ]
 
     # create a three-class label (label2)
-    w1 = 45
-    w0 = 15
-
     train["label1"] = np.where(train["ttf"] <= w1, 1, 0)
     train["label2"] = train["label1"]
     train.loc[train["ttf"] <= w0, "label2"] = 2
@@ -131,16 +128,16 @@ def rec_plot(s, eps=0.10, steps=10):
 
 class Loader:
 
-    def __init__(self, use_cuda, dataset_number, batch_size):
+    def __init__(self, use_cuda, batch_size, w0=15, w1=45):
 
         recovered = self._recover_data()
         if recovered:
-            X_train, X_test, y_train, y_test, num_channels = recovered
             print("read data from cache")
+            X_train, X_test, y_train, y_test, num_channels = recovered
         else:
-            X_train, X_test, y_train, y_test, num_channels = self._construct_data(dataset_number)
-            self._save_data(X_train, X_test, y_train, y_test)
             print("constructing dataset")
+            X_train, X_test, y_train, y_test, num_channels = self._construct_data(w0, w1)
+            self._save_data(X_train, X_test, y_train, y_test)
 
         self.num_train_batches = int(X_train.shape[0] / batch_size)
         self.num_test_batches = int(X_test.shape[0] / batch_size)
@@ -149,7 +146,8 @@ class Loader:
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-
+        
+        
         self.num_channels = num_channels
 
         self.cuda = use_cuda and torch.cuda.is_available()
@@ -177,9 +175,9 @@ class Loader:
         np.save("y_test.npy", y_test)
 
 
-    def _construct_data(self, dataset_number):
+    def _construct_data(self, w0, w1):
 
-        train_df, test_df, feature_cols = read_data(dataset_number)
+        train_df, test_df, feature_cols = read_data(w0, w1)
 
         X_train = gen_features(
             df=train_df,
@@ -216,6 +214,7 @@ class Loader:
 
 
     def train(self):
+        
         for i in range(self.num_train_batches):
             start, stop = i * self.batch_size, (i + 1) * self.batch_size
             X = self.X_train[start:stop]
@@ -231,6 +230,7 @@ class Loader:
 
 
     def test(self):
+        
         for i in range(self.num_test_batches):
             start, stop = i * self.batch_size, (i + 1) * self.batch_size
             X = self.X_test[start:stop]
