@@ -27,7 +27,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 loss_fn = nn.NLLLoss()
 
-nb_epochs = 10
+nb_epochs = 20
 
 model_name = "CNN2d"
 
